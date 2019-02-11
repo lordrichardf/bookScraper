@@ -14,6 +14,13 @@ class BooksSpider(scrapy.Spider):
             absolute_url = response.urljoin(url)
             yield Request(absolute_url, callback=self.parse_url)
 
+        next_page = response.xpath(
+            '//*[@class="next"]/a/@href').extract_first()
+
+        if next_page is not None:
+            next_page = response.urljoin(next_page)
+            yield Request(next_page, callback=self.parse)
+
     def parse_url(self, response):
         title = response.xpath(
             '//*[@class="col-sm-6 product_main"]/h1/text()').extract_first()
@@ -27,7 +34,7 @@ class BooksSpider(scrapy.Spider):
 
         UPC = response.xpath(
             '//*[@class="table table-striped"]/tr/th/following-sibling::td/text()')[0].extract()
-            
+
         yield {
             'Title': title,
             'Price': price,
