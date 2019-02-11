@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import re
 from scrapy.http import Request
 
 class BooksSpider(scrapy.Spider):
@@ -16,5 +17,19 @@ class BooksSpider(scrapy.Spider):
     def parse_url(self, response):
         title = response.xpath(
             '//*[@class="col-sm-6 product_main"]/h1/text()').extract_first()
+        
+        price = response.xpath(
+            '//*[@class="price_color"]/text()').extract_first()
 
-        print(title)
+        stock = response.xpath(
+            '//*[@class="instock availability"]/text()[2]').extract_first()
+        stock = re.sub("\D", "", stock)
+
+        UPC = response.xpath(
+            '//*[@class="table table-striped"]/tr/th/following-sibling::td/text()')[0].extract()
+            
+        yield {
+            'Title': title,
+            'Price': price,
+            'Units Available': stock, 
+        }
